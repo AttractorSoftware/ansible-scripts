@@ -1,0 +1,8 @@
+system_user: <YourUser>
+domain: localhost
+private_key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    <Your private key>
+    -----END RSA PRIVATE KEY-----
+public_key: |
+    <Your private key>

@@ -1,0 +1,5 @@
+---
+project_name: <project_user>
+project_repo: <project_repo>
+project_source: /home/{{web_user}}/projects/popserver-src
+project_configs_path: "{{ project_source }}/application/configs"

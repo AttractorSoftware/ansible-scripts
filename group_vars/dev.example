@@ -1,0 +1,8 @@
+---
+system_user: root
+domain: localhost
+private_key: |
+    -----RSA PRIVATE KEY-----
+    -----END RSA PRIVATE KEY-----
+public_key: |
+    ssh-rsa

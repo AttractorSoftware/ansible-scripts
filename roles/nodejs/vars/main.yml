@@ -1,0 +1,6 @@
+---
+  # Install nodejs vars
+node_version: "0.10.33"
+node_tarball: "{{node_prefix}}.tar.gz"
+node_prefix: "node-v{{node_version}}"
+node_path: "/usr/local"

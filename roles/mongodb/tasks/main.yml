@@ -1,0 +1,91 @@
+# file: roles/mongodb/tasks/main.yml
+#
+# Description:  Installs MongoDB,
+#               installs pymongo,
+#               adds mongo admin user,
+#               adds database specific user
+#
+# Parameters:
+#   - mongo_version  (default=2.6.5)
+#   - db_admin_user
+#   - db_admin_pass
+#   - db_host
+#   - db_port
+#   - db_user
+#   - db_pass
+#   - db_name
+#
+---
+- name: Import the MongoDB public key used by the package management system.
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: 7F0CEB10
+  register: mongokeyimported
+
+- name: Create a list file for MongoDB for Ubuntu dist
+  copy:
+    src: mongodb.list.ubuntu
+    dest: /etc/apt/sources.list.d/mongodb.list
+    owner: root
+    group: root
+  register: mongolistcreated
+  when: ansible_distribution == "Ubuntu" and mongokeyimported|success
+
+- name: Create a list file for MongoDB for Debian dist
+  copy:
+    src: mongodb.list.debian
+    dest: /etc/apt/sources.list.d/mongodb.list
+    owner: root
+    group: root
+  register: mongolistcreated
+  when: ansible_distribution == "Debian" and mongokeyimported|success
+
+- name: Install MongoDB
+  apt:
+    update_cache: yes
+    name: mongodb-org={{ mongo_version|default(2.6.5) }}
+    state: present
+  notify: start mongodb
+  when: mongolistcreated|success
+
+- name: Install the mongodb package
+  apt: name={{ item }} state=installed
+  with_items:
+   - build-essential
+   - python-dev
+   - python-pip
+
+- name: Install the latest pymongo package
+  pip: name=pymongo state=latest use_mirrors=no
+
+- name: Add admin user
+  mongodb_user:
+    database: "admin"
+    name: "{{ db_admin_user }}"
+    password: "{{ db_admin_pass }}"
+    roles: "userAdminAnyDatabase"
+    state: present
+  register: mongoAdminAdded
+
+- name: Add user
+  mongodb_user:
+    login_host: "{{ db_host }}"
+    login_port: "{{ db_port }}"
+    login_user: "{{ db_admin_user }}"
+    login_password: "{{ db_admin_pass }}"
+    database: "{{ db_name }}"
+    name: "{{ db_user }}"
+    password: "{{ db_pass }}"
+    roles: 'readWrite,dbAdmin'
+    state: present
+  when: mongoAdminAdded|success
+
+- name: Create the mongodb configuration file
+  template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+  notify:
+    - restart mongodb
+  when: mongoAdminAdded|success
+
+

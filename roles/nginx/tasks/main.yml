@@ -1,0 +1,86 @@
+# file: roles/nginx/tasks/main.yml
+#
+# Description:  Installs Nginx,
+#               disables default site,
+#               adds new sites
+#
+# Parameters:
+#   - sites
+#   - ansible_distribution_release
+#   - ansible_distribution
+#
+---
+- name: Import Nginx key used by the package management system.
+  apt_key:
+    url: http://nginx.org/keys/nginx_signing.key
+    state: present
+  register: nginxKeyIsImported
+  when: ansible_distribution == "Debian"
+
+- name: add nginx repository
+  apt_repository:
+    repo: 'deb http://nginx.org/packages/debian/ {{ ansible_distribution_release }} nginx'
+    state: present
+    update_cache: yes
+  register: repositoryAdded
+  when: ansible_distribution == "Debian" and nginxKeyIsImported|success
+
+- name: add nginx repository
+  apt_repository: repo='ppa:nginx/stable' state=present
+  register: repositoryAdded
+  when: ansible_distribution == "Ubuntu"
+
+- name: install nginx
+  apt:
+    pkg: nginx
+    state: installed
+    update_cache: true
+  when: repositoryAdded|success
+  register: nginxinstalled
+  notify:
+    - start nginx
+
+- name: Disable Default Site (Ubuntu)
+  when: nginxinstalled|success
+  file: dest=/etc/nginx/sites-enabled/default state=absent
+  when: ansible_distribution == "Ubuntu"
+
+- name: Disable Default Site (Debian)
+  when: nginxinstalled|success
+  file: dest=/etc/nginx/conf.d/default.conf state=absent
+  when: ansible_distribution == "Debian"
+
+- name: Add Site Config (Ubuntu)
+  when: nginxinstalled|success
+  register: siteconfig
+  template:
+    src: server.conf.j2
+    dest: /etc/nginx/sites-available/{{ item.name }}.conf
+    owner: root
+    group: root
+  with_items: sites
+  when: ansible_distribution == "Ubuntu"
+
+- name: Add Site Config (Debian)
+  when: nginxinstalled|success
+  register: siteconfig
+  template:
+    src: server.conf.j2
+    dest: /etc/nginx/conf.d/{{ item.name }}.conf
+    owner: root
+    group: root
+  with_items: sites
+  notify:
+    - reload nginx
+  when: ansible_distribution == "Debian"
+
+- name: Enable Site Config
+  when: siteconfig|success
+  file:
+    src: /etc/nginx/sites-available/{{ item.name }}.conf
+    dest: /etc/nginx/sites-enabled/{{ item.name }}.conf
+    state: link
+  with_items: sites
+  notify:
+    - reload nginx
+  when: ansible_distribution == "Ubuntu"

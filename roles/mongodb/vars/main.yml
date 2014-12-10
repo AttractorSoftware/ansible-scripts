@@ -1,0 +1,4 @@
+---
+mongo_control_script: /etc/init.d/mongod
+mongo_config_path: /etc/mongod.conf
+mongo_version: 2.6.5

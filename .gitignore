@@ -1,0 +1,4 @@
+.idea
+group_vars/dev
+inventories/dev_servers
+inventories/staging_servers

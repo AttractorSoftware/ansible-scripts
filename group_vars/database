@@ -1,0 +1,8 @@
+---
+db_host: localhost
+db_port: 27017
+db_admin_user: mongoAdmin
+db_admin_pass: mongoAdminPass
+db_name: popserver
+db_user: popserver_user
+db_pass: popserverUserPass

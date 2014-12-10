@@ -1,0 +1,3 @@
+---
+config_dir: /home/{{ web_user }}/pm2conf
+log_dir: /home/{{ web_user }}/log

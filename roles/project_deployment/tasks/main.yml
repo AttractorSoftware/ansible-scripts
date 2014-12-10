@@ -1,0 +1,46 @@
+# file: roles/project_deployment/tasks/main.yml
+#
+# Description:  clones project from bitbucket repository,
+#               installs project's npm packages,
+#               adds project's configs,
+#               removes project's config dists
+#
+# Parameters:
+#   - project_source
+#   - project_repo
+#   - web_user
+#   - project_configs_path
+#   - project_configs
+#   - config_dists
+#
+---
+- name: cloning project
+  git:
+    repo: "{{ project_repo }}"
+    dest: "{{ project_source }}"
+    accept_hostkey: yes
+    force: yes
+  sudo_user: "{{ web_user }}"
+  register: projectcloned
+
+- name: Installation of NPM packages
+  npm:
+    production: yes
+    path: "{{ project_source }}"
+  sudo_user: "{{ web_user }}"
+  when: projectcloned|success
+  register: npmPackagesAreInstalled
+
+- name: Add configs
+  template:
+    src: "{{ item.template }}"
+    dest: "{{ project_configs_path }}/{{ item.config }}"
+    owner: "{{ web_user }}"
+    group: "{{ web_user }}"
+  with_items: project_configs
+
+- name: Delete config dists
+  file:
+    dest: "{{ project_configs_path }}/{{ item }}"
+    state: absent
+  with_items: config_dists

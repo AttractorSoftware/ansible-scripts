@@ -1,0 +1,9 @@
+{% macro pasteLocation(location) -%}
+
+   location {{ location.name }} {
+        {% for k,v in location.pairs.iteritems() %}
+        {{k}} {{v}};
+        {% endfor %}
+   }
+
+{% endmacro %}

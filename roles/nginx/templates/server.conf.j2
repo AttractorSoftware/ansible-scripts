@@ -1,0 +1,24 @@
+server {
+    listen {{item.port}};
+
+    server_name {{item.server_name}};
+
+    access_log /var/log/nginx/{{item.name}}.access.log;
+
+    {% for location in item.locations %}
+
+        {% if location.type is not defined %}
+            {% set template = 'locations/default.j2' %}
+            {% from template import pasteLocation with context %}
+            {{ pasteLocation(location) }}
+        {% else %}
+            {% set template = 'locations/' + location.type + '.j2' %}
+            {% from template import pasteLocation with context %}
+            {{ pasteLocation(location) }}
+        {% endif %}
+
+    {% endfor %}
+}
+
+
+

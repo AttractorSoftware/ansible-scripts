@@ -1,0 +1,46 @@
+# file: roles/common/tasks/main.yml
+#
+# Description:  Installs debconf,
+#               generates locales,
+#               sets default locale
+#
+# Parameters:
+#   - locale
+#
+---
+#- name: Configuring Locales
+#  shell: "{{ item }}"
+#  with_items:
+#    - export LANGUAGE=en_US.UTF-8
+#    - export LANG=en_US.UTF-8
+#    - export LC_ALL=en_US.UTF-8
+#    - dpkg-reconfigure locales
+#  when: ansible_distribution == "Debian"
+#
+#- name: Create Locale
+#  locale_gen:
+#    name: en_US.UTF-8
+#  when: ansible_distribution == "Debian"
+
+- name: Install debconf (Only for Debian)
+  apt:
+    name: debconf
+    update_cache: yes
+  when: ansible_distribution == "Debian"
+  register: debconfIsInstalled
+
+- name: Set to generate locales
+  debconf:
+    name: locales
+    question: 'locales/locales_to_be_generated'
+    value: '{{ locale }} UTF-8'
+    vtype: 'multiselect'
+  when: ansible_distribution == "Debian" and debconfIsInstalled|success
+
+- name: Set default locale
+  debconf:
+    name: locales
+    question: 'locales/default_environment_locale'
+    value: "{{ locale }}"
+    vtype: 'select'
+  when: ansible_distribution == "Debian" and debconfIsInstalled|success

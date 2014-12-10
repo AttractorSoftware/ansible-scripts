@@ -1,0 +1,7 @@
+---
+project_configs:
+  - { template: db-config.json.j2, config: db-config.json }
+  - { template: config.dist.json.j2, config: config.json }
+config_dists:
+  - db-config.dist.json
+  - config.dist.json

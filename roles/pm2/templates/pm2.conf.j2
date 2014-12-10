@@ -1,0 +1,12 @@
+{
+    "name"   : "popserver_production",
+    "cwd"    : "{{project_source}}",
+    "script" : "application/app.js",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "error_file"       : "{{log_dir}}/{{project_name}}.stderr.log",
+    "out_file"         : "{{log_dir}}/{{project_name}}.stdout.log",
+    "merge_logs"       : true,
+    "env": {
+        "NODE_ENV": "prod",
+      }
+}

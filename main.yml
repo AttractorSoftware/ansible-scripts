@@ -1,0 +1,12 @@
+---
+- hosts: all
+  user: "{{ system_user }}"
+  sudo: yes
+  roles:
+    - user_manage
+    - common
+    - mongodb
+    - nodejs
+    - project_deployment
+    - pm2
+    - nginx

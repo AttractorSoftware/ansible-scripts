@@ -1,0 +1,61 @@
+# file: roles/pm2/tasks/main.yml
+#
+# Description:  instals PM2 globaly, creates diraction for logs and creates a PM2 config for project
+#
+# Parameters:
+#   - config_dir
+#   - web_user
+#
+---
+- name: Install pm2
+  npm: name=pm2 state=present global=yes
+
+- name: Create a project config folder
+  file:
+    path: "{{config_dir}}"
+    group: "{{ web_user }}"
+    owner: "{{ web_user }}"
+    mode: 0755
+    state: directory
+
+- name: Create a project log folder
+  file:
+    path: '{{log_dir}}'
+    group: "{{ web_user }}"
+    owner: "{{ web_user }}"
+    mode: 0755
+    state: directory
+
+- name: Create a pm2 config
+  template:
+    src: pm2.conf.j2
+    dest: '{{config_dir}}/{{project_name}}.conf.json'
+    owner: "{{ web_user }}"
+    group: "{{ web_user }}"
+
+- name: Stop all active pm2 processes
+  shell: pm2 stop all
+  sudo_user: "{{web_user}}"
+  ignore_errors: True
+
+- name: Remove all active pm2 processes
+  shell: pm2 delete all
+  sudo_user: "{{web_user}}"
+  ignore_errors: True
+
+- name: Start pm2 process
+  shell: pm2 start '{{config_dir}}/{{project_name}}.conf.json'
+  sudo_user: "{{web_user}}"
+
+- name: Generating a startup script (Ubuntu)
+  shell: env PATH=$PATH:/usr/local/bin pm2 startup ubuntu -u {{ web_user }}
+  when: ansible_distribution == "Ubuntu"
+
+- name: Generating a startup script (Debian)
+  shell: env PATH=$PATH:/usr/local/bin pm2 startup debian -u {{ web_user }}
+  when: ansible_distribution == "Debian"
+
+- name: Save a process list
+  shell: pm2 save
+
+

@@ -1,0 +1,9 @@
+# file: roles/git/tasks/main.yml
+#
+# Description:  Installs git
+#
+---
+- name: Install git
+  apt:
+    name: git
+    state: present

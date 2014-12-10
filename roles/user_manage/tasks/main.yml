@@ -1,0 +1,30 @@
+# file: roles/user_manage/tasks/main.yml
+#
+# Description:  Creates "web" user,
+#               sets private, public rsa keys
+#
+# Parameters:
+#   - web_user
+#   - private_key
+#   - public_key
+#
+---
+- name: Create web user
+  user:
+    name: "{{ web_user }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+
+- name: Set Private RSA Key
+  copy:
+    content: "{{ private_key }}"
+    dest: ~/.ssh/id_rsa
+    mode: 0600
+  sudo_user: "{{ web_user }}"
+
+- name: Set Public RSA Key
+  copy:
+    content: "{{ public_key }}"
+    dest: ~/.ssh/id_rsa.pub
+    mode: 0644
+  sudo_user: "{{ web_user }}"
